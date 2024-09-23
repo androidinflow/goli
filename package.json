@@ -41,6 +41,8 @@
 	"types": "./dist/index.d.ts",
 	"type": "module",
 	"dependencies": {
-		"pocketbase": "^0.21.5"
+		"pocketbase": "^0.21.5",
+		"svelte-inview": "^4.0.2",
+		"svelte-motion": "^0.12.2"
 	}
 }
