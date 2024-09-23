@@ -6,6 +6,7 @@
     import Comment from '$lib/components/Comment.svelte';
     import { fade, scale, fly } from 'svelte/transition';
     import { spring } from 'svelte/motion';
+    import Time from "svelte-time/Time.svelte";
     
     export let data;
     const { post, commentsData, user } = data;
@@ -92,20 +93,25 @@
         });
     }
 
-    // Add this function to handle keydown events
-    function handleKeydown(event) {
-        if (event.key === 'Escape' && fullscreenImage) {
-            closeFullscreen();
+    // New function for sharing on social media
+    function shareOnSocialMedia(platform) {
+        const url = encodeURIComponent(window.location.href);
+        const title = encodeURIComponent(post.title);
+        const imageUrl = encodeURIComponent(`https://pb.redruby.one/api/files/${post.collectionId}/${post.id}/${post.main_image}`);
+        const content = encodeURIComponent(post.content.replace(/<[^>]*>/g, '').slice(0, 200) + '...');
+        let shareUrl;
+
+        switch(platform) {
+            case 'twitter':
+                shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${title}&hashtags=blogpost`;
+                window.open(shareUrl, '_blank');
+                break;
+            case 'telegram':
+                shareUrl = `https://t.me/share/url?url=${url}&text=${title}%0A%0A${content}%0A%0A${imageUrl}`;
+                window.open(shareUrl, '_blank');
+                break;
         }
     }
-
-    // Add this onMount to add and remove the event listener
-    onMount(() => {
-        window.addEventListener('keydown', handleKeydown);
-        return () => {
-            window.removeEventListener('keydown', handleKeydown);
-        };
-    });
 </script>
 
 <div class="flex justify-center items-center container mx-auto b" in:fly="{{ y: 50, duration: 300 }}">
@@ -128,6 +134,14 @@
             on:click={() => openFullscreen(post.main_image)}
             on:keydown={(e) => e.key === 'Enter' && openFullscreen(post.main_image)}
         >
+        <p class="text-sm opacity-60 my-2 mx-1 flex items-center" in:fly="{{ y: 20, duration: 300, delay: 450 }}">
+            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+            </svg>
+            <span>Posted </span>
+            &nbsp;
+            <Time relative timestamp={post.created} />
+        </p>
             <img
                 src={`https://pb.redruby.one/api/files/${post.collectionId}/${post.id}/${post.main_image}`}
                 alt={post.title}
@@ -138,12 +152,19 @@
         <h1 class="text-xl font-semibold text-base-content mt-2" in:fly="{{ y: 20, duration: 300, delay: 400 }}">
             {post.title}
         </h1>
-        <p class="text-sm opacity-60" in:fly="{{ y: 20, duration: 300, delay: 450 }}">
-            Posted on {new Date(post.created).toLocaleDateString()}
-        </p>
         <div class="divider" in:scale="{{ duration: 300, delay: 500 }}"></div>
         <div class="prose max-w-none text-sm leading-[1.5] text-base-content/70" in:fly="{{ y: 20, duration: 300, delay: 550 }}">
             {@html post.content}
+        </div>
+
+        <!-- New social media sharing buttons -->
+        <div class="mt-4 flex justify-end space-x-2">
+            <button on:click={() => shareOnSocialMedia('twitter')} class="btn btn-sm btn-outline">
+                Share on Twitter
+            </button>
+            <button on:click={() => shareOnSocialMedia('telegram')} class="btn btn-sm btn-outline">
+                Share on Telegram
+            </button>
         </div>
 
         {#if post.other_images?.length}

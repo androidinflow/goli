@@ -12,7 +12,7 @@
     export let vy = 0;
   
     let canvasRef;
-    let canvasContainerRef;
+    let canvasContainerRef; 
     let context = null;
     let circles = [];
     let mouse = { x: 0, y: 0 };

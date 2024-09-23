@@ -81,7 +81,7 @@
 	}
 </script>
 
-<div class="flex flex-col items-center min-h-screen mt-20 lg:mt-20 md:mt-20" in:fade={{ duration: 150 }}>
+<div class="flex flex-col items-center mx-2 min-h-screen mt-20 lg:mt-20 md:mt-20" in:fade={{ duration: 150 }}>
 	<div class="w-full max-w-md px-8 py-6 rounded-xl bg-base-100" in:fly={{ y: 20, duration: 250, delay: 150 }}>
 		<div class="flex items-center p-4">
 			{#if $user}

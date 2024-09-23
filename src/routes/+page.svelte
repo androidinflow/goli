@@ -57,6 +57,19 @@
 
 		return rangeWithDots;
 	}
+
+	let bookmarkingStates = {};
+
+	function handleBookmark(postId) {
+		return ({ form, data, action, cancel }) => {
+			bookmarkingStates[postId] = true;
+
+			return async ({ result, update }) => {
+				bookmarkingStates[postId] = false;
+				await update();
+			};
+		};
+	}
 </script>
 
 <div class="relative min-h-screen flex flex-col items-center justify-center">
@@ -65,7 +78,7 @@
 	<div class="w-full max-w-6xl px-4">
 		<div class="flex justify-between items-center mb-6">
 			<h2 class="text-3xl font-bold">Latest Posts</h2>
-			<div class="tabs tabs-boxed">
+			<div class="tabs tabs-boxed">	
 				<button class="tab {!filterCs ? 'tab-active' : ''}" on:click={toggleFilter} aria-label="Show all posts">
 					All Posts
 				</button>
@@ -76,7 +89,7 @@
 		</div>
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 			{#each posts as post, index}
-				<div class="relative transform transition duration-500 hover:scale-105 hover:rotate-1" style="animation: fadeIn 0.5s ease-out {index * 0.1}s both;">
+				<div class="relative">
 					<Post
 						title={post.title.substring(0, 50) + '...'}
 						description={post.content.substring(0, 140) + '...'}
@@ -84,10 +97,14 @@
 						buttonText="Read More"
 						on:click={() => goto(`/post/${post.id}`)}
 					/>
-					<form action="?/toggleBookmark" method="POST" use:enhance>
+					<form action="?/toggleBookmark" method="POST" use:enhance={handleBookmark(post.id)}>
 						<input type="hidden" name="postId" value={post.id} />
-						<button type="submit" class="absolute top-2 right-2 text-2xl transition-transform duration-300 hover:scale-110">
-							{isBookmarked(post.id) ? '💾' : '📌'}
+						<button type="submit" class="absolute top-2 right-2 text-2xl transition-transform duration-300 hover:scale-110" disabled={bookmarkingStates[post.id]}>
+							{#if bookmarkingStates[post.id]}
+								<span class="loading loading-spinner loading-sm"></span>
+							{:else}
+								{isBookmarked(post.id) ? '💾' : '📌'}
+							{/if}
 						</button>
 					</form>
 				</div>
