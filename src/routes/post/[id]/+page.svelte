@@ -1,7 +1,9 @@
 <script>
     import { Motion, useMotionTemplate, useMotionValue } from "svelte-motion";
+    import { enhance } from '$app/forms';
+    import { onMount } from 'svelte';
     export let data;
-    const { post, commentsData } = data;
+    const { post, commentsData, user } = data; // Assuming user data is passed in `data`
 
     // Function to build a tree from flat comments array
     function buildCommentTree(comments) {
@@ -13,7 +15,6 @@
             comment.children = [];
             commentMap[comment.id] = comment;
         });
-
         // Build the tree
         comments.forEach((comment) => {
             if (comment.parent_comment) {
@@ -35,12 +36,12 @@
     // Prepare the comment tree
     $: commentTree = buildCommentTree(commentsData);
 
-    // Comment Component
+    // Updated Comment Component
     const Comment = (props) => {
         const { comment } = props;
 
         return `
-    <div class="border border-gray-300 p-4 mt-4 rounded-lg">
+    <div class="border p-4 mt-2 border-l-1 border-l-black">
       <div class="flex items-center">
         <img
           src="${comment.expand.user.avatarUrl || "/default-avatar.png"}"
@@ -57,11 +58,11 @@
         <p class="text-gray-800">${comment.content}</p>
         <span class="text-gray-500 text-xs">${new Date(comment.created).toLocaleString()}</span>
       </div>
-
+      <button class="text-blue-500 text-sm mt-2">Reply</button>
       ${
           comment.children && comment.children.length > 0
               ? `
-        <div class="ml-6 mt-4">
+        <div class="ml-4 mt-4">
           ${comment.children.map((child) => Comment({ comment: child })).join("")}
         </div>
       `
@@ -80,12 +81,14 @@
         mouseX.set(e.clientX - left);
         mouseY.set(e.clientY - top);
     }
+
+    onMount(() => {});
 </script>
 
-<div class="flex justify-center bg-base-200 p-4 container">
+<div class="flex justify-center bg-base-200 p-4 container ">
     <div
         on:mousemove={handleMouseMove}
-        class="group relative w-full overflow-hidden rounded-xl bg-base-300 border border-base-content/10 px-4 py-5"
+        class="group relative w-full overflow-hidden rounded-xl bg-base-300 border border-base-content/10 px-4 py-5  max-w-6xl"
         role="region"
         aria-label="Post content"
     >
@@ -107,9 +110,7 @@
             Posted on {new Date(post.created).toLocaleDateString()}
         </p>
         <div class="divider"></div>
-        <div
-            class="prose max-w-none text-sm leading-[1.5] text-base-content/70"
-        >
+        <div class="prose max-w-none text-sm leading-[1.5] text-base-content/70">
             {@html post.content}
         </div>
 
@@ -129,8 +130,18 @@
     </div>
 </div>
 
-<main class="max-w-3xl mx-auto px-4 py-8 font-sans">
-    <h1 class="text-2xl font-bold text-center mb-6">Comments</h1>
+<main class="max-w-6xl mx-auto px-4 py-8 font-sans ">
+    <h1 class="text-2xl font-bold text-left mb-2">Comments</h1>
+    
+    {#if user}
+        <form action="?/addComment" method="POST" use:enhance class="mb-4">
+            <textarea name="content" class="w-full p-2 border rounded" placeholder="Add a comment..." required></textarea>
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded mt-2">Submit Comment</button>
+        </form>
+    {:else}
+        <p class="text-center text-gray-500">You must be logged in to add a comment.</p>
+    {/if}
+
     {#if commentTree.length > 0}
       {@html commentTree.map(comment => Comment({ comment })).join('')}
     {:else}
