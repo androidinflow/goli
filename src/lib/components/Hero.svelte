@@ -42,24 +42,24 @@
   <div class="z-10 text-center p-8 max-w-4xl"
        in:fade="{{ duration: 800, delay: 800 }}">
     {#if $user}
-      <button class="btn btn-primary btn-glow mb-8 transform hover:scale-105 transition-all duration-300" 
+      <button class="btn btn-primary bg-gradient-to-r from-primary to-secondary text-white font-bold py-3 px-6 rounded-full shadow-lg transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary" 
               on:click={() => goto('/account/profile')}
               in:fly="{{ y: 20, duration: 500, delay: 1000 }}"
               out:fade="{{ duration: 300 }}">
         <span class="mr-2">🚀</span>
-        Rush to Your Profile
+        Explore Your Profile
       </button>
     {:else}
       <div class="space-y-4 mb-8">
-        <button class="btn btn-primary btn-pulse w-full sm:w-auto" 
+        <button class="btn btn-primary bg-gradient-to-r from-secondary to-accent text-white font-bold py-3 px-6 rounded-full shadow-lg transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary w-full sm:w-auto" 
                 on:click={() => goto('/account/login')}
                 in:fly="{{ y: 20, duration: 500, delay: 1000 }}"
                 out:fade="{{ duration: 300 }}">
           <span class="mr-2">🎉</span>
-          Join the CS2 Squad
+          Join the CS2 Community
         </button>
-        <p class="text-sm text-gray-400 animate-bounce">
-          Sign up now and get a free weapon skin!
+        <p class="text-sm text-gray-400 animate-pulse">
+          Sign up now for exclusive in-game rewards!
         </p>
       </div>
     {/if}

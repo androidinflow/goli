@@ -77,7 +77,7 @@
 	<Hero />
 	<div class="w-full max-w-6xl px-4">
 		<div class="flex justify-between items-center mb-6">
-			<h2 class="text-3xl font-bold">Latest Posts</h2>
+			<h2 class="text-xl font-bold">Latest Posts</h2>
 			<div class="tabs tabs-boxed">	
 				<button class="tab {!filterCs ? 'tab-active' : ''}" on:click={toggleFilter} aria-label="Show all posts">
 					All Posts
