@@ -6,7 +6,8 @@ export const load = async ({ params, locals }) => {
         
         const comments = await locals.pocketbase.collection('comments').getList(1, 50, {
             filter: `post="${params.id}"`,
-            expand: 'user,parent_comment'
+            expand: 'user,parent_comment',
+            sort: '-created' 
         });
 
         return {

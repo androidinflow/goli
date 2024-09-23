@@ -9,7 +9,9 @@
 
 <div class="navbar">
 	<div class="flex-1">
-		<a href="/" class="text-xl btn btn-ghost">Template</a>
+		<a href="/" class="text-3xl font-bold btn btn-ghost hover:text-primary transition-colors duration-300">
+			<span class="text-primary">CS2</span> Club
+		</a>
 		<div class="flex-none">
 			<ToggleLightDarkMode></ToggleLightDarkMode>
 		</div>

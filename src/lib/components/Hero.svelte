@@ -22,7 +22,7 @@
 
   <BoxReveal duration={0.5}>
     <h2 class="mt-[.5rem] text-[1.5rem] md:text-[2rem] font-bold">
-      Your ultimate <span class="text-[#5046e6]">intel source</span>
+      Your ultimate <span class="text-primary">intel source</span>
     </h2>
   </BoxReveal>
 

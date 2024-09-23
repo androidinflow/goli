@@ -52,7 +52,7 @@
           alt="Product image"
           height={10}
           width={10}
-          class="rounded-xl h-52 w-full object-cover opacity-75"
+          class="rounded-xl h-52 w-full object-cover"
         />
         <div class="flex flex-row items-center justify-between pt-2">
           <h3 class="text-xl font-semibold text-base-content">{title}</h3>

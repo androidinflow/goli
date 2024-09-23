@@ -1,11 +1,15 @@
 <script>
     import { Motion, useMotionTemplate, useMotionValue } from "svelte-motion";
     import { enhance } from '$app/forms';
+    import { invalidateAll } from '$app/navigation';
     import { onMount } from 'svelte';
     import Comment from '$lib/components/Comment.svelte';  // Import the new Comment component
     
     export let data;
     const { post, commentsData, user } = data;
+
+    let loading = true;  // Add loading state
+    let error = null;    // Add error state
 
     // Function to build a tree from flat comments array
     function buildCommentTree(comments) {
@@ -60,7 +64,25 @@
         replyingTo = null;
     }
 
-    onMount(() => {});
+    function handleCommentSubmit() {
+        return async ({ result, update }) => {
+            if (result.type === 'success') {
+                // Reset the form
+                replyingTo = null;
+                
+                // Invalidate all data and update the page
+                await invalidateAll();
+                await update();
+            }
+        };
+    }
+
+    onMount(() => {
+        // Simulate fetching comments
+        setTimeout(() => {
+            loading = false;
+        }, 2000);
+    });
 </script>
 
 <div class="flex justify-center bg-base-200 p-4 container ">
@@ -79,7 +101,7 @@
         <img
             src={`https://pb.redruby.one/api/files/${post.collectionId}/${post.id}/${post.main_image}`}
             alt={post.title}
-            class="rounded-xl max-h-96 w-full object-cover opacity-75 max-w-6xl"
+            class="rounded-xl max-h-96 w-full object-cover  max-w-6xl"
         />
         <h1 class="text-xl font-semibold text-base-content mt-2">
             {post.title}
@@ -95,13 +117,18 @@
         {#if post.other_images?.length}
             <div class="divider"></div>
             <h2 class="text-lg font-semibold mb-2">Other Images</h2>
-            <div class="carousel rounded-box max-w-6xl">
-                {#each post.other_images as image}
-                    <img
-                        src={`https://pb.redruby.one/api/files/${post.collectionId}/${post.id}/${image}`}
-                        alt="Other"
-                        class="w-full rounded-xl carousel-item"
-                    />
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {#each post.other_images as image, index}
+                    <div class="relative">
+                        <img
+                            src={`https://pb.redruby.one/api/files/${post.collectionId}/${post.id}/${image}`}
+                            alt={`Other image ${index + 1}`}
+                            class="w-full rounded-xl"
+                        />
+                        <div class="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+                            {index + 1} / {post.other_images.length}
+                        </div>
+                    </div>
                 {/each}
             </div>
         {/if}
@@ -112,7 +139,7 @@
     <h1 class="text-2xl font-bold text-left mb-2">Comments</h1>
     
     {#if user}
-        <form action="?/addComment" method="POST" use:enhance class="mb-4">
+        <form action="?/addComment" method="POST" use:enhance={handleCommentSubmit} class="mb-4">
             <textarea name="content" class="w-full p-2 border rounded" placeholder={replyingTo ? "Write a reply..." : "Add a comment..."} required></textarea>
             {#if replyingTo}
                 <input type="hidden" name="parent_comment" value={replyingTo}>
@@ -124,7 +151,11 @@
         <p class="text-center text-gray-500">You must be logged in to add a comment.</p>
     {/if}
 
-    {#if commentTree.length > 0}
+    {#if loading}
+        <p class="text-center text-gray-500">Loading comments...</p>
+    {:else if error}
+        <p class="text-center text-red-500">Failed to load comments. Please try again later.</p>
+    {:else if commentTree.length > 0}
         {#each commentTree as comment}
             <Comment {comment} on:reply={handleReply} />
         {/each}
