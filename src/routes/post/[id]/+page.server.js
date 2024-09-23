@@ -21,24 +21,30 @@ export const load = async ({ params, locals }) => {
 
 export const actions = {
     addComment: async ({ request, locals, params }) => {
-        // Check if the user is logged in
         if (!locals.user) {
             return fail(401, { message: 'You must be logged in to add a comment' });
         }
 
         const formData = await request.formData();
         const content = formData.get('content');
+        const parentComment = formData.get('parent_comment');
 
         if (!content) {
             return fail(400, { message: 'Comment content is required' });
         }
 
         try {
-            await locals.pocketbase.collection('comments').create({
+            const commentData = {
                 content,
                 user: locals.user.id,
                 post: params.id
-            });
+            };
+
+            if (parentComment) {
+                commentData.parent_comment = parentComment;
+            }
+
+            await locals.pocketbase.collection('comments').create(commentData);
             return { success: true };
         } catch (err) {
             console.error('Error adding comment:', err);

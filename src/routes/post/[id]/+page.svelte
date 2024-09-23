@@ -2,14 +2,16 @@
     import { Motion, useMotionTemplate, useMotionValue } from "svelte-motion";
     import { enhance } from '$app/forms';
     import { onMount } from 'svelte';
+    import Comment from '$lib/components/Comment.svelte';  // Import the new Comment component
+    
     export let data;
-    const { post, commentsData, user } = data; // Assuming user data is passed in `data`
+    const { post, commentsData, user } = data;
 
     // Function to build a tree from flat comments array
     function buildCommentTree(comments) {
         const commentMap = {};
         const tree = [];
-
+        
         // Initialize the map
         comments.forEach((comment) => {
             comment.children = [];
@@ -36,42 +38,6 @@
     // Prepare the comment tree
     $: commentTree = buildCommentTree(commentsData);
 
-    // Updated Comment Component
-    const Comment = (props) => {
-        const { comment } = props;
-
-        return `
-    <div class="border p-4 mt-2 border-l-1 border-l-black">
-      <div class="flex items-center">
-        <img
-          src="${comment.expand.user.avatarUrl || "/default-avatar.png"}"
-          alt="${comment.expand.user.name}"
-          class="w-10 h-10 rounded-full mr-3 object-cover"
-        />
-        <div>
-          <strong class="font-semibold">${comment.expand.user.name}</strong>
-          ${comment.expand.user.verified ? `<span class="text-blue-500 ml-1">✔️</span>` : ""}
-          <p class="text-gray-600 text-sm">@${comment.expand.user.username}</p>
-        </div>
-      </div>
-      <div class="mt-2">
-        <p class="text-gray-800">${comment.content}</p>
-        <span class="text-gray-500 text-xs">${new Date(comment.created).toLocaleString()}</span>
-      </div>
-      <button class="text-blue-500 text-sm mt-2">Reply</button>
-      ${
-          comment.children && comment.children.length > 0
-              ? `
-        <div class="ml-4 mt-4">
-          ${comment.children.map((child) => Comment({ comment: child })).join("")}
-        </div>
-      `
-              : ""
-      }
-    </div>
-  `;
-    };
-
     let mouseX = useMotionValue(0);
     let mouseY = useMotionValue(0);
     let background = useMotionTemplate`radial-gradient(200px circle at ${mouseX}px ${mouseY}px, rgba(51, 51, 51, 0.4), transparent 80%)`;
@@ -80,6 +46,18 @@
         const { left, top } = e.currentTarget.getBoundingClientRect();
         mouseX.set(e.clientX - left);
         mouseY.set(e.clientY - top);
+    }
+
+    let replyingTo = null;
+
+    function handleReply(event) {
+        const commentId = event.detail.commentId;
+        replyingTo = commentId;
+        console.log('Replying to comment ID:', commentId);
+    }
+
+    function cancelReply() {
+        replyingTo = null;
     }
 
     onMount(() => {});
@@ -135,16 +113,22 @@
     
     {#if user}
         <form action="?/addComment" method="POST" use:enhance class="mb-4">
-            <textarea name="content" class="w-full p-2 border rounded" placeholder="Add a comment..." required></textarea>
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded mt-2">Submit Comment</button>
+            <textarea name="content" class="w-full p-2 border rounded" placeholder={replyingTo ? "Write a reply..." : "Add a comment..."} required></textarea>
+            {#if replyingTo}
+                <input type="hidden" name="parent_comment" value={replyingTo}>
+                <button type="button" on:click={cancelReply} class="bg-gray-500 text-white px-4 py-2 rounded mt-2 mr-2">Cancel Reply</button>
+            {/if}
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded mt-2">{replyingTo ? "Submit Reply" : "Submit Comment"}</button>
         </form>
     {:else}
         <p class="text-center text-gray-500">You must be logged in to add a comment.</p>
     {/if}
 
     {#if commentTree.length > 0}
-      {@html commentTree.map(comment => Comment({ comment })).join('')}
+        {#each commentTree as comment}
+            <Comment {comment} on:reply={handleReply} />
+        {/each}
     {:else}
-      <p class="text-center text-gray-500">No comments available.</p>
+        <p class="text-center text-gray-500">No comments available.</p>
     {/if}
 </main>
