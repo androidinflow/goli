@@ -1,5 +1,5 @@
 <script>
-	// Types and variables
+	import { fade, fly } from 'svelte/transition';
 	import ProfileImage from '$lib/components/shared/ProfileImage.svelte';
 	import { user } from '$lib/stores/user.store';
 
@@ -81,11 +81,11 @@
 	}
 </script>
 
-<div class="flex flex-col items-center min-h-screen mt-20 lg:mt-20 md:mt-20">
-	<div class="w-full max-w-md px-8 py-6 rounded-xl bg-base-100">
+<div class="flex flex-col items-center min-h-screen mt-20 lg:mt-20 md:mt-20" in:fade={{ duration: 150 }}>
+	<div class="w-full max-w-md px-8 py-6 rounded-xl bg-base-100" in:fly={{ y: 20, duration: 250, delay: 150 }}>
 		<div class="flex items-center p-4">
 			{#if $user}
-				<button on:click={triggerFileInput} class="relative">
+				<button on:click={triggerFileInput} class="relative" in:fade={{ duration: 150, delay: 300 }}>
 					{#if $user.avatar}
 						<ProfileImage avatar={$user.avatar}></ProfileImage>
 					{:else if $user.avatarUrl}
@@ -95,13 +95,14 @@
 					{/if}
 					<span
 						class="absolute bottom-0 right-0 flex items-center justify-center w-6 h-6 text-md text-white transform translate-x-1 translate-y-1.5 border-white rounded-full bg-primary"
+						in:fade={{ duration: 150, delay: 450 }}
 						>+</span
 					>
 				</button>
-				<h1 class="pl-5 text-2xl font-bold">{$user.username}</h1>
+				<h1 class="pl-5 text-2xl font-bold" in:fly={{ x: 20, duration: 250, delay: 300 }}>{$user.username}</h1>
 			{/if}
 		</div>
-		<div class="border-t border-gray-200"></div>
-		<div class="p-4 text-center">Profile information</div>
+		<div class="border-t border-gray-200" in:fade={{ duration: 150, delay: 450 }}></div>
+		<div class="p-4 text-center" in:fly={{ y: 20, duration: 250, delay: 600 }}>Profile information</div>
 	</div>
 </div>

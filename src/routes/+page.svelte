@@ -10,7 +10,6 @@
 	export let data;
 	const image_url = 'https://pb.redruby.one/api/files/posts/';
 
-
 	$: filterCs = $page.url.searchParams.get('filterCs') === 'true';
 	$: currentPage = parseInt($page.url.searchParams.get('page') || '1', 10);
 
@@ -22,8 +21,11 @@
 		goto(`?filterCs=${filterCs}&page=${newPage}`, { replaceState: true });
 	}
 
-	$: ({ posts, totalPages } = data);
+	$: ({ posts, totalPages, bookmarkedPostIds } = data);
 
+	function isBookmarked(postId) {
+		return bookmarkedPostIds.includes(postId);
+	}
 
 	function generatePagination(currentPage, totalPages) {
 		const delta = 2;
@@ -73,14 +75,22 @@
 			</div>
 		</div>
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-			{#each posts as post}
-				<Post
-					title={post.title.substring(0, 50) + '...'}
-					description={post.content.substring(0, 140) + '...'}
-					imageUrl={image_url + post.id + '/' + post.main_image}
-					buttonText="Read More"
-					on:click={() => goto(`/post/${post.id}`)}
-				/>
+			{#each posts as post, index}
+				<div class="relative transform transition duration-500 hover:scale-105 hover:rotate-1" style="animation: fadeIn 0.5s ease-out {index * 0.1}s both;">
+					<Post
+						title={post.title.substring(0, 50) + '...'}
+						description={post.content.substring(0, 140) + '...'}
+						imageUrl={image_url + post.id + '/' + post.main_image}
+						buttonText="Read More"
+						on:click={() => goto(`/post/${post.id}`)}
+					/>
+					<form action="?/toggleBookmark" method="POST" use:enhance>
+						<input type="hidden" name="postId" value={post.id} />
+						<button type="submit" class="absolute top-2 right-2 text-2xl transition-transform duration-300 hover:scale-110">
+							{isBookmarked(post.id) ? '💾' : '📌'}
+						</button>
+					</form>
+				</div>
 			{/each}
 		</div>
 	</div>

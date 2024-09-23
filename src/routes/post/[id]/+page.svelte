@@ -3,32 +3,30 @@
     import { enhance } from '$app/forms';
     import { invalidateAll } from '$app/navigation';
     import { onMount } from 'svelte';
-    import Comment from '$lib/components/Comment.svelte';  // Import the new Comment component
+    import Comment from '$lib/components/Comment.svelte';
+    import { fade, scale, fly } from 'svelte/transition';
+    import { spring } from 'svelte/motion';
     
     export let data;
     const { post, commentsData, user } = data;
 
-    let loading = true;  // Add loading state
-    let error = null;    // Add error state
+    let loading = true;
+    let error = null;
 
-    // Function to build a tree from flat comments array
     function buildCommentTree(comments) {
         const commentMap = {};
         const tree = [];
         
-        // Initialize the map
         comments.forEach((comment) => {
             comment.children = [];
             commentMap[comment.id] = comment;
         });
-        // Build the tree
         comments.forEach((comment) => {
             if (comment.parent_comment) {
                 const parent = commentMap[comment.parent_comment];
                 if (parent) {
                     parent.children.push(comment);
                 } else {
-                    // If parent not found, treat as root
                     tree.push(comment);
                 }
             } else {
@@ -39,7 +37,6 @@
         return tree;
     }
 
-    // Prepare the comment tree
     $: commentTree = buildCommentTree(commentsData);
 
     let mouseX = useMotionValue(0);
@@ -67,10 +64,7 @@
     function handleCommentSubmit() {
         return async ({ result, update }) => {
             if (result.type === 'success') {
-                // Reset the form
                 replyingTo = null;
-                
-                // Invalidate all data and update the page
                 await invalidateAll();
                 await update();
             }
@@ -78,68 +72,130 @@
     }
 
     onMount(() => {
-        // Simulate fetching comments
         setTimeout(() => {
             loading = false;
-        }, 2000);
+        }, 1000);
+    });
+
+    // New code for fullscreen image functionality
+    let fullscreenImage = null;
+    const fullscreenSpring = spring({ x: 0, y: 0, scale: 0.9 });
+
+    function openFullscreen(image) {
+        fullscreenImage = image;
+        fullscreenSpring.set({ x: 0, y: 0, scale: 0.9 });
+    }
+
+    function closeFullscreen() {
+        fullscreenSpring.set({ x: 0, y: 0, scale: 0.5 }, { hard: false }).then(() => {
+            fullscreenImage = null;
+        });
+    }
+
+    // Add this function to handle keydown events
+    function handleKeydown(event) {
+        if (event.key === 'Escape' && fullscreenImage) {
+            closeFullscreen();
+        }
+    }
+
+    // Add this onMount to add and remove the event listener
+    onMount(() => {
+        window.addEventListener('keydown', handleKeydown);
+        return () => {
+            window.removeEventListener('keydown', handleKeydown);
+        };
     });
 </script>
 
-<div class="flex justify-center bg-base-200 p-4 container ">
+<div class="flex justify-center items-center container mx-auto b" in:fly="{{ y: 50, duration: 300 }}">
     <div
         on:mousemove={handleMouseMove}
-        class="group relative w-full overflow-hidden rounded-xl bg-base-300 border border-base-content/10 px-4 py-5  max-w-6xl"
+        class="group relative overflow-hidden rounded-xl bg-base-300 border border-base-content/10 px-4 py-5   max-w-6xl"
         role="region"
         aria-label="Post content"
+        in:scale="{{ duration: 300, delay: 150 }}"
     >
         <Motion style={{ background }} let:motion>
             <div
                 use:motion
-                class="pointer-events-none absolute -inset-px rounded-xl opacity-0 transition duration-300 group-hover:opacity-100"
+                class="pointer-events-none absolute -inset-px rounded-xl opacity-0 transition duration-200 group-hover:opacity-100"
             ></div>
         </Motion>
-        <img
-            src={`https://pb.redruby.one/api/files/${post.collectionId}/${post.id}/${post.main_image}`}
-            alt={post.title}
-            class="rounded-xl max-h-96 w-full object-cover  max-w-6xl"
-        />
-        <h1 class="text-xl font-semibold text-base-content mt-2">
+        <div
+            role="button"
+            tabindex="0"
+            on:click={() => openFullscreen(post.main_image)}
+            on:keydown={(e) => e.key === 'Enter' && openFullscreen(post.main_image)}
+        >
+            <img
+                src={`https://pb.redruby.one/api/files/${post.collectionId}/${post.id}/${post.main_image}`}
+                alt={post.title}
+                class="rounded-xl max-h-96 w-full object-cover max-w-6xl cursor-pointer"
+                in:fade="{{ duration: 300, delay: 300 }}"
+            />
+        </div>
+        <h1 class="text-xl font-semibold text-base-content mt-2" in:fly="{{ y: 20, duration: 300, delay: 400 }}">
             {post.title}
         </h1>
-        <p class="text-sm opacity-60">
+        <p class="text-sm opacity-60" in:fly="{{ y: 20, duration: 300, delay: 450 }}">
             Posted on {new Date(post.created).toLocaleDateString()}
         </p>
-        <div class="divider"></div>
-        <div class="prose max-w-none text-sm leading-[1.5] text-base-content/70">
+        <div class="divider" in:scale="{{ duration: 300, delay: 500 }}"></div>
+        <div class="prose max-w-none text-sm leading-[1.5] text-base-content/70" in:fly="{{ y: 20, duration: 300, delay: 550 }}">
             {@html post.content}
         </div>
 
         {#if post.other_images?.length}
-            <div class="divider"></div>
-            <h2 class="text-lg font-semibold mb-2">Other Images</h2>
+            <div class="divider" in:scale="{{ duration: 300, delay: 600 }}"></div>
+            <h2 class="text-lg font-semibold mb-2" in:fly="{{ y: 20, duration: 300, delay: 650 }}">Other Images</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {#each post.other_images as image, index}
-                    <div class="relative">
+                    <button
+                        type="button"
+                        class="w-full p-0 border-0 bg-transparent"
+                        on:click={() => openFullscreen(image)}
+                        on:keydown={(e) => e.key === 'Enter' && openFullscreen(image)}
+                        in:scale="{{ duration: 300, delay: 700 + index * 50 }}"
+                    >
                         <img
                             src={`https://pb.redruby.one/api/files/${post.collectionId}/${post.id}/${image}`}
                             alt={`Other image ${index + 1}`}
-                            class="w-full rounded-xl"
+                            class="w-full rounded-xl cursor-pointer"
                         />
-                        <div class="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
-                            {index + 1} / {post.other_images.length}
-                        </div>
-                    </div>
+                    </button>
                 {/each}
             </div>
         {/if}
     </div>
 </div>
 
-<main class="max-w-6xl mx-auto px-4 py-8 font-sans ">
-    <h1 class="text-2xl font-bold text-left mb-2">Comments</h1>
+{#if fullscreenImage}
+    <div
+        class="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center"
+        on:click={closeFullscreen}
+        on:keydown={(e) => e.key === 'Escape' && closeFullscreen()}
+        tabindex="0"
+        role="button"
+        aria-label="Close fullscreen image"
+        transition:fade="{{ duration: 200 }}"
+    >
+        <Motion let:motion values={fullscreenSpring}>
+            <img
+                use:motion
+                src={`https://pb.redruby.one/api/files/${post.collectionId}/${post.id}/${fullscreenImage}`}
+                alt="Fullscreen"
+                class="w-[80%] h-[80%] object-contain"
+            />
+        </Motion>
+    </div>
+{/if}
+
+<main class="max-w-6xl mx-auto px-4 py-8 font-sans" in:fly="{{ y: 50, duration: 300, delay: 750 }}">
+    <h1 class="text-2xl font-bold text-left mb-2" in:fly="{{ y: 20, duration: 300, delay: 800 }}">Comments</h1>
     
     {#if user}
-        <form action="?/addComment" method="POST" use:enhance={handleCommentSubmit} class="mb-4">
+        <form action="?/addComment" method="POST" use:enhance={handleCommentSubmit} class="mb-4" in:scale="{{ duration: 300, delay: 850 }}">
             <textarea name="content" class="w-full p-2 border rounded" placeholder={replyingTo ? "Write a reply..." : "Add a comment..."} required></textarea>
             {#if replyingTo}
                 <input type="hidden" name="parent_comment" value={replyingTo}>
@@ -148,18 +204,20 @@
             <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded mt-2">{replyingTo ? "Submit Reply" : "Submit Comment"}</button>
         </form>
     {:else}
-        <p class="text-center text-gray-500">You must be logged in to add a comment.</p>
+        <p class="text-center text-gray-500" in:fly="{{ y: 20, duration: 300, delay: 850 }}">You must be logged in to add a comment.</p>
     {/if}
 
     {#if loading}
-        <p class="text-center text-gray-500">Loading comments...</p>
+        <p class="text-center text-gray-500" in:fade="{{ duration: 300, delay: 900 }}">Loading comments...</p>
     {:else if error}
-        <p class="text-center text-red-500">Failed to load comments. Please try again later.</p>
+        <p class="text-center text-red-500" in:fade="{{ duration: 300, delay: 900 }}">Failed to load comments. Please try again later.</p>
     {:else if commentTree.length > 0}
-        {#each commentTree as comment}
-            <Comment {comment} on:reply={handleReply} />
+        {#each commentTree as comment, index}
+            <div in:fly="{{ y: 20, duration: 300, delay: 900 + index * 50 }}">
+                <Comment {comment} on:reply={handleReply} />
+            </div>
         {/each}
     {:else}
-        <p class="text-center text-gray-500">No comments available.</p>
+        <p class="text-center text-gray-500" in:fade="{{ duration: 300, delay: 900 }}">No comments available.</p>
     {/if}
 </main>
