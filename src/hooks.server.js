@@ -10,8 +10,8 @@ export const handle = async ({ event, resolve }) => {
 	event.locals.pocketbase = new PocketBase(PUBLIC_DATABASE_URL);
 	event.locals.pocketbase.authStore.loadFromCookie(event.request.headers.get('cookie') || '');
 
-	// Log the IP address with each request
-	const ip = event.request.headers.get('x-forwarded-for') || event.request.headers.get('x-real-ip') || event.clientAddress;
+	// Log the real IP address with each request, considering Cloudflare proxy
+	const ip = event.request.headers.get('cf-connecting-ip') || event.request.headers.get('x-forwarded-for') || event.request.headers.get('x-real-ip') || event.clientAddress;
 	console.log('Request IP:', ip);
 
 	try {
