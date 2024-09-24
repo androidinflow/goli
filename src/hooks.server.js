@@ -10,9 +10,10 @@ export const handle = async ({ event, resolve }) => {
 	event.locals.pocketbase = new PocketBase(PUBLIC_DATABASE_URL);
 	event.locals.pocketbase.authStore.loadFromCookie(event.request.headers.get('cookie') || '');
 
-	/**
-	 *
-	 */
+	// Log the IP address with each request
+	const ip = event.request.headers.get('x-forwarded-for') || event.request.headers.get('x-real-ip') || event.clientAddress;
+	console.log('Request IP:', ip);
+
 	try {
 		if (event.locals.pocketbase.authStore.isValid) {
 			await event.locals.pocketbase.collection('users').authRefresh();
