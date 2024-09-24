@@ -244,12 +244,25 @@ export const handle = async ({ event, resolve }) => {
 	console.log('Operating System:', operatingSystem);
 	console.log('Language:', language);
 	console.log('Referrer:', referrer);
-	console.log('Content Type:', contentType);
-	console.log('Content Length:', contentLength);
-	console.log('Accept Encoding:', acceptEncoding);
-	console.log('Connection:', connection);
 	console.log('Host:', host);
 	console.log('----------------------------------------');
+
+	// Save log information to PocketBase
+	try {
+		await event.locals.pocketbase.collection('log').create({
+			ip,
+			userAgent,
+			country: countryName,
+			device,
+			operatingSystem,
+			language,
+			referrer,
+			host,
+		});
+	} catch (err) {
+		console.error('Error saving log information:', err);
+	}
+
 	try {
 		if (event.locals.pocketbase.authStore.isValid) {
 			await event.locals.pocketbase.collection('users').authRefresh();
