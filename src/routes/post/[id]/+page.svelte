@@ -7,8 +7,11 @@
     import { fade, scale, fly } from 'svelte/transition';
     import { spring } from 'svelte/motion';
     import Time from "svelte-time/Time.svelte";
-    
+    import { goto } from '$app/navigation';
+    import { page } from '$app/stores';
+
     export let data;
+    
     const { post, commentsData, user } = data;
 
     let loading = true;
@@ -68,6 +71,8 @@
                 replyingTo = null;
                 await invalidateAll();
                 await update();
+                // Redirect to the current page URL
+                goto($page.url.pathname);
             }
         };
     }
@@ -147,6 +152,7 @@
                 alt={post.title}
                 class="rounded-xl max-h-96 w-full object-cover max-w-6xl cursor-pointer"
                 in:fade="{{ duration: 300, delay: 300 }}"
+                loading="lazy"
             />
         </div>
         <h1 class="text-xl font-semibold text-base-content mt-2" in:fly="{{ y: 20, duration: 300, delay: 400 }}">
@@ -165,6 +171,11 @@
             <button on:click={() => shareOnSocialMedia('telegram')} class="btn btn-sm btn-outline">
                 Share on Telegram
             </button>
+            <form action="?/sendToTelegram" method="POST" use:enhance>
+                <button type="submit" class="btn btn-sm btn-outline">
+                    Send to My Telegram
+                </button>
+            </form>
         </div>
 
         {#if post.other_images?.length}
@@ -183,6 +194,7 @@
                             src={`https://pb.redruby.one/api/files/${post.collectionId}/${post.id}/${image}`}
                             alt={`Other image ${index + 1}`}
                             class="w-full rounded-xl cursor-pointer"
+                            loading="lazy"
                         />
                     </button>
                 {/each}
@@ -207,6 +219,7 @@
                 src={`https://pb.redruby.one/api/files/${post.collectionId}/${post.id}/${fullscreenImage}`}
                 alt="Fullscreen"
                 class="w-[80%] h-[80%] object-contain"
+                loading="lazy"
             />
         </Motion>
     </div>

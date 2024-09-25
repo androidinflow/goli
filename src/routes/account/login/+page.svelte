@@ -21,7 +21,6 @@
 			<button
 				type="submit"
 				class="w-full flex items-center justify-center space-x-2 py-4 px-6 bg-black hover:bg-gray-900 focus:ring-2 focus:ring-offset-2 focus:ring-purple-600 text-purple-300 rounded-full transition duration-500 ease-in-out transform hover:scale-105 shadow-lg border border-purple-600 relative overflow-hidden group"
-				on:mouseenter={animateLogo}
 			>
 				<div class="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-500 to-red-500 opacity-0 group-hover:opacity-30 transition-opacity duration-500"></div>
 				<svg class="w-6 h-6 animate-spin-slow" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

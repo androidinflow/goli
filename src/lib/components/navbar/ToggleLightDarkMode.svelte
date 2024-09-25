@@ -8,7 +8,7 @@
 	import { onMount } from 'svelte';
 
 	const dark = 'sunset';
-	const light = 'lemonade';
+	const light = 'emerald';
 
 	let currentTheme = light;
 

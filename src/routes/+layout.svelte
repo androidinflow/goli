@@ -10,6 +10,7 @@
 	export let data;
 
 	$: $user = data.user
+
 </script>
 
 <div class="bg-base-300">

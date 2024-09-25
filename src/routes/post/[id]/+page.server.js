@@ -1,4 +1,6 @@
 import { error, fail } from '@sveltejs/kit';
+import { sendTelegramMessage } from '$lib/telegram.js';
+import { PUBLIC_SITE_URL } from '$env/static/public';
 
 export const load = async ({ params, locals }) => {
     try {
@@ -50,6 +52,32 @@ export const actions = {
         } catch (err) {
             console.error('Error adding comment:', err);
             return fail(500, { message: 'Failed to add comment' });
+        }
+    },
+
+    sendToTelegram: async ({ locals, params }) => {
+        if (!locals.user || !locals.user.tel) {
+            
+            return fail(401, { message: 'You must be logged in and have a Telegram account linked to send posts' });
+        }
+
+        try {
+            const post = await locals.pocketbase.collection('posts').getOne(params.id);
+            
+            const message = `
+New post: ${post.title}
+
+${post.content.substring(0, 200)}...
+
+Read more: ${PUBLIC_SITE_URL}/post/${post.id}
+            `.trim();
+
+            await sendTelegramMessage(locals.user.tel.chatId, message);
+            
+            return { success: true, message: 'Post sent to Telegram' };
+        } catch (err) {
+            console.error('Error sending post to Telegram:', err);
+            return fail(500, { message: 'Failed to send post to Telegram' });
         }
     }
 };

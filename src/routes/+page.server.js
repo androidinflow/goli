@@ -3,13 +3,14 @@ import { error, fail, redirect } from '@sveltejs/kit';
 export const load = async ({ locals, url }) => {
     const filterCs = url.searchParams.get('filterCs') === 'true';
     const page = parseInt(url.searchParams.get('page') || '1', 10);
-    const perPage = 5; // Number of posts per page
+    const perPage = 5 // Number of posts per page
 
     try {
         const filter = filterCs ? 'cs = true' : '';
         const posts = await locals.pocketbase.collection('posts').getList(page, perPage, {
             sort: '-created',
-            filter: filter
+            filter: filter,
+            fields: 'id,title,created,content,main_image'
         });
 
         let bookmarkedPostIds = [];
@@ -64,7 +65,7 @@ export const actions = {
             } else {
                 await locals.pocketbase.collection('bookmarks').create({
                     user: locals.user.id,
-                    post: postId
+                    post: postId,
                 });
             }
 

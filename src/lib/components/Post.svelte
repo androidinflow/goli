@@ -1,8 +1,10 @@
 <script>
     import { Motion, useMotionTemplate, useMotionValue } from "svelte-motion";
     import { createEventDispatcher } from 'svelte';
+    import Time from "svelte-time/Time.svelte";
     
     export let title = "Luxe";
+    export let created_at = "a long time ago";
     export let description = "Library of dark mode components to illuminate your applications with elegance and sophistication.";
     export let imageUrl = "https://i.pinimg.com/564x/c3/5c/30/c35c30d5bb21d2392c3daa0abd8a5440.jpg";
     export let buttonText = "Sponsor Now";
@@ -46,6 +48,9 @@
       class="relative flex flex-col h-full rounded-xl border border-base-content/10 px-4 py-5"
     >
       <div class="flex flex-col h-full">
+        <p class="text-sm text-base-content/70 mb-2">
+          <Time relative timestamp={created_at} />
+        </p>
         <!-- svelte-ignore a11y-img-redundant-alt -->
         <img
           src={imageUrl}
@@ -53,11 +58,12 @@
           height={10}
           width={10}
           class="rounded-xl h-52 w-full object-cover"
+          loading="lazy"
         />
         <div class="flex flex-row items-center justify-between pt-2">
           <h3 class="text-xl font-semibold text-base-content">{title}</h3>
         </div>
-        <p class="text-sm leading-[1.5] text-base-content/70 flex-grow">
+        <p class="text-sm leading-[1.5] text-base-content/70 flex-grow mt-2">
           {description}
         </p>
         <button

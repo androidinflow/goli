@@ -92,6 +92,7 @@
 				<div class="relative">
 					<Post
 						title={post.title.substring(0, 50) + '...'}
+						created_at={post.created}
 						description={post.content.substring(0, 140) + '...'}
 						imageUrl={image_url + post.id + '/' + post.main_image}
 						buttonText="Read More"
