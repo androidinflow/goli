@@ -18,17 +18,40 @@ export const load = async ({ locals }) => {
  */
 export const actions = {
 	updateAvatar: async ({ locals, request }) => {
-		const data = Object.fromEntries(await request.formData());
-
-		if (data.avatar && locals && locals.user) {
-			const user = await locals.pocketbase.collection('users').update(locals.user.id, {
-				avatar: data.avatar
-			});
-
-			throw redirect(307, '');
+		if (!locals.user) {
+			return fail(401, { message: 'You must be logged in to update your avatar' });
 		}
 
-		throw redirect(302, '/errors');
+		const data = await request.formData();
+		const avatarFile = data.get('avatar');
+
+		if (!avatarFile) {
+			return fail(400, { message: 'No avatar file provided' });
+		}
+
+		try {
+			// Convert base64 to file if necessary
+			let file;
+			if (typeof avatarFile === 'string' && avatarFile.startsWith('data:image')) {
+				// It's a base64 string
+				const res = await fetch(avatarFile);
+				const blob = await res.blob();
+				file = new File([blob], 'avatar.png', { type: 'image/png' });
+			} else {
+				// It's already a file
+				file = avatarFile;
+			}
+
+			// Update the user's avatar
+			await locals.pocketbase.collection('users').update(locals.user.id, {
+				avatar: file
+			});
+
+			return { success: true, message: 'Avatar updated successfully' };
+		} catch (error) {
+			console.error('Error updating avatar:', error);
+			return fail(500, { message: 'Failed to update avatar' });
+		}
 	},
 
 	updateTelegram: async ({ locals, request }) => {

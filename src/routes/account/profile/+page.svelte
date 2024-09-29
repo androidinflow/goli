@@ -17,18 +17,21 @@
     formData.append("avatar", image);
 
     try {
-      const result = await fetch("?/updateAvatar", {
+      const response = await fetch("?/updateAvatar", {
         method: "POST",
         body: formData,
       });
 
-      if (result.ok && $user) {
+      const result = await response.json();
+
+      if (result.success) {
         $user.avatar = image;
       } else {
-        throw new Error("Failed to update avatar");
+        throw new Error(result.message || "Failed to update avatar");
       }
     } catch (error) {
       console.error("Error updating avatar:", error);
+      // You might want to show an error message to the user here
     }
   };
 
