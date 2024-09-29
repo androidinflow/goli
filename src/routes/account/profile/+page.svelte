@@ -25,7 +25,8 @@
       const result = await response.json();
 
       if (result.success) {
-        $user.avatar = image;
+        // Update the user store with the new avatar
+        $user = { ...$user, avatar: image };
       } else {
         throw new Error(result.message || "Failed to update avatar");
       }
@@ -107,7 +108,7 @@
               >
                 <ProfileImage
                   avatar={$user.avatar
-                    ? `${base}/${$user.id}/${$user.avatar}`
+                    ? `${base}/${$user.id}/${$user.avatar}?t=${Date.now()}`
                     : $user.avatarUrl}
                   class="w-32 h-32 object-cover"
                 />
