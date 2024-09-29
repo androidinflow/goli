@@ -7,6 +7,7 @@ export const load = async ({ locals }) => {
 		
 		return {
 			user: {
+				id: locals.user.id,
 				avatar: locals.user.avatar ? locals.user.avatar : undefined,
 				avatarUrl: locals.user.avatarUrl ? locals.user.avatarUrl : undefined,
 				email: locals.user.email,
